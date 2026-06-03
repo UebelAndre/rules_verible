@@ -1,0 +1,50 @@
+load("@rules_verible//verible:defs.bzl", "verible_diff_test", "verible_format_test", "verible_lint_test")
+load("@rules_verilog//verilog:defs.bzl", "verilog_library")
+
+verilog_library(
+    name = "adder",
+    srcs = ["adder.sv"],
+)
+
+verible_format_test(
+    name = "adder_format_test",
+    target = ":adder",
+)
+
+verible_lint_test(
+    name = "adder_lint_test",
+    target = ":adder",
+)
+
+# Intentionally misformatted, useful for exercising the fixer. Tagged so it
+# is excluded from the default --config=verible_format / --config=verible_lint
+# aspect sweeps and from `bazel run //verible/format:fix` workspace queries.
+verilog_library(
+    name = "unformatted",
+    srcs = ["unformatted.sv"],
+    tags = ["manual"],
+)
+
+# An expected-to-fail demonstration of the test rule against the misformatted
+# library. Run with `bazel test //examples/simple:unformatted_format_test`.
+verible_format_test(
+    name = "unformatted_format_test",
+    tags = ["manual"],
+    target = ":unformatted",
+)
+
+# Demonstrates `verible_diff_test`: adder.sv and adder_minified.sv have
+# different whitespace but identical tokens, so they match in `format` mode.
+verible_diff_test(
+    name = "adder_diff_test",
+    file1 = "adder.sv",
+    file2 = "adder_minified.sv",
+)
+
+# Expected-to-fail diff between two distinct modules. Tagged manual.
+verible_diff_test(
+    name = "adder_vs_unformatted_diff_test",
+    file1 = "adder.sv",
+    file2 = "unformatted.sv",
+    tags = ["manual"],
+)

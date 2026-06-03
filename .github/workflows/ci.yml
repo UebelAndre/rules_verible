@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / Bazel ${{ matrix.bazel-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-2022]
+        bazel-version: ["7.*", "8.*", "9.*"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bazel
+        uses: bazel-contrib/setup-bazel@0.9.0
+        with:
+          bazelisk-cache: true
+          repository-cache: true
+          disk-cache: ${{ github.workflow }}-${{ matrix.os }}-${{ matrix.bazel-version }}
+
+      - name: Run all tests
+        env:
+          USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
+        run: bazel test //... --test_output=errors
+
+      - name: Run example module tests
+        env:
+          USE_BAZEL_VERSION: ${{ matrix.bazel-version }}
+        working-directory: examples/simple
+        run: bazel test //... --test_output=errors

@@ -1,0 +1,19 @@
+"""rules_verible simple example consumer.
+
+A standalone Bazel module that depends on `rules_verible` via a
+`local_path_override` pointing at the repository root. Doubles as the
+BCR presubmit test module so any incoming version change is validated
+against an end-to-end consumer before publishing.
+"""
+
+module(
+    name = "rules_verible_examples_simple",
+    version = "0.0.0",
+)
+
+bazel_dep(name = "rules_verilog", version = "1.1.1")
+bazel_dep(name = "rules_verible", version = "0.1.0")
+local_path_override(
+    module_name = "rules_verible",
+    path = "../..",
+)

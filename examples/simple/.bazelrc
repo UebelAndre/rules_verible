@@ -1,0 +1,17 @@
+common --enable_platform_specific_config
+
+build --incompatible_disallow_empty_glob=true
+build --nolegacy_external_runfiles
+build --sandbox_default_allow_network=false
+
+# Demonstrates how a downstream consumer wires the rules_verible aspects.
+build:verible_format --aspects=@rules_verible//verible:verible_format_aspect.bzl%verible_format_aspect
+build:verible_format --output_groups=+verible_format_checks
+
+build:verible_lint --aspects=@rules_verible//verible:verible_lint_aspect.bzl%verible_lint_aspect
+build:verible_lint --output_groups=+verible_lint_checks
+
+build:verible --config=verible_format
+build:verible --config=verible_lint
+
+try-import %workspace%/user.bazelrc

@@ -1,0 +1,118 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+exports_files(
+    ["BUILD.verible.bazel"],
+    visibility = ["//visibility:public"],
+)
+
+bzl_library(
+    name = "target_srcs",
+    srcs = ["target_srcs.bzl"],
+    visibility = ["//verible:__subpackages__"],
+    deps = ["@rules_verilog//verilog:defs_bzl"],
+)
+
+bzl_library(
+    name = "toolchain_alias",
+    srcs = ["toolchain_alias.bzl"],
+    visibility = ["//verible:__subpackages__"],
+    deps = ["//verible:verible_toolchain"],
+)
+
+bzl_library(
+    name = "format",
+    srcs = ["format.bzl"],
+    visibility = ["//verible:__subpackages__"],
+    deps = [
+        ":target_srcs",
+        "//verible:verible_toolchain",
+    ],
+)
+
+bzl_library(
+    name = "lint",
+    srcs = ["lint.bzl"],
+    visibility = ["//verible:__subpackages__"],
+    deps = [
+        ":target_srcs",
+        "//verible:verible_toolchain",
+    ],
+)
+
+bzl_library(
+    name = "diff",
+    srcs = ["diff.bzl"],
+    visibility = ["//verible:__subpackages__"],
+    deps = ["//verible:verible_toolchain"],
+)
+
+cc_library(
+    name = "subprocess",
+    srcs = select({
+        "@platforms//os:windows": ["subprocess_win32.cc"],
+        "//conditions:default": ["subprocess_posix.cc"],
+    }),
+    hdrs = ["subprocess.h"],
+    visibility = ["//verible:__subpackages__"],
+)
+
+cc_binary(
+    name = "verible_format_runner",
+    srcs = ["verible_format_runner.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":subprocess",
+        "@rules_cc//cc/runfiles",
+    ],
+)
+
+cc_binary(
+    name = "verible_format_fixer",
+    srcs = ["verible_format_fixer.cc"],
+    data = ["//verible:current_verible_toolchain"],
+    env = {
+        "VERIBLE_FORMAT_RLOCATIONPATH": "$(VERIBLE_FORMAT_RLOCATIONPATH)",
+    },
+    toolchains = ["//verible:current_verible_toolchain"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":subprocess",
+        "@rules_cc//cc/runfiles",
+    ],
+)
+
+cc_binary(
+    name = "verible_lint_runner",
+    srcs = ["verible_lint_runner.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":subprocess",
+        "@rules_cc//cc/runfiles",
+    ],
+)
+
+cc_binary(
+    name = "verible_lint_fixer",
+    srcs = ["verible_lint_fixer.cc"],
+    data = ["//verible:current_verible_toolchain"],
+    env = {
+        "VERIBLE_LINT_RLOCATIONPATH": "$(VERIBLE_LINT_RLOCATIONPATH)",
+    },
+    toolchains = ["//verible:current_verible_toolchain"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":subprocess",
+        "@rules_cc//cc/runfiles",
+    ],
+)
+
+cc_binary(
+    name = "verible_diff_runner",
+    srcs = ["verible_diff_runner.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":subprocess",
+        "@rules_cc//cc/runfiles",
+    ],
+)

@@ -1,0 +1,95 @@
+load("@io_bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
+load("@rules_rust_mdbook//:defs.bzl", "mdbook", "mdbook_server")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+
+stardoc(
+    name = "verible_toolchain_doc",
+    out = "src/verible_toolchain.md",
+    input = "//verible:verible_toolchain.bzl",
+    table_of_contents_template = "@io_bazel_stardoc//stardoc:templates/markdown_tables/table_of_contents.vm",
+    tags = ["manual"],
+    deps = ["//verible:verible_toolchain"],
+)
+
+stardoc(
+    name = "verible_format_aspect_doc",
+    out = "src/verible_format_aspect.md",
+    input = "//verible:verible_format_aspect.bzl",
+    table_of_contents_template = "@io_bazel_stardoc//stardoc:templates/markdown_tables/table_of_contents.vm",
+    tags = ["manual"],
+    deps = ["//verible:verible_format_aspect"],
+)
+
+stardoc(
+    name = "verible_format_test_doc",
+    out = "src/verible_format_test.md",
+    input = "//verible:verible_format_test.bzl",
+    table_of_contents_template = "@io_bazel_stardoc//stardoc:templates/markdown_tables/table_of_contents.vm",
+    tags = ["manual"],
+    deps = ["//verible:verible_format_test"],
+)
+
+stardoc(
+    name = "verible_lint_aspect_doc",
+    out = "src/verible_lint_aspect.md",
+    input = "//verible:verible_lint_aspect.bzl",
+    table_of_contents_template = "@io_bazel_stardoc//stardoc:templates/markdown_tables/table_of_contents.vm",
+    tags = ["manual"],
+    deps = ["//verible:verible_lint_aspect"],
+)
+
+stardoc(
+    name = "verible_lint_test_doc",
+    out = "src/verible_lint_test.md",
+    input = "//verible:verible_lint_test.bzl",
+    table_of_contents_template = "@io_bazel_stardoc//stardoc:templates/markdown_tables/table_of_contents.vm",
+    tags = ["manual"],
+    deps = ["//verible:verible_lint_test"],
+)
+
+stardoc(
+    name = "verible_diff_test_doc",
+    out = "src/verible_diff_test.md",
+    input = "//verible:verible_diff_test.bzl",
+    table_of_contents_template = "@io_bazel_stardoc//stardoc:templates/markdown_tables/table_of_contents.vm",
+    tags = ["manual"],
+    deps = ["//verible:verible_diff_test"],
+)
+
+mdbook(
+    name = "book",
+    srcs = glob(["src/**/*.md"]) + [
+        ":verible_diff_test_doc",
+        ":verible_format_aspect_doc",
+        ":verible_format_test_doc",
+        ":verible_lint_aspect_doc",
+        ":verible_lint_test_doc",
+        ":verible_toolchain_doc",
+    ],
+    book = "book.toml",
+    # Windows builds are typically super slow in CI so they're avoided.
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+)
+
+alias(
+    name = "docs",
+    actual = ":book",
+    tags = ["manual"],
+)
+
+mdbook_server(
+    name = "server",
+    book = ":book",
+    tags = ["manual"],
+)
+
+sh_binary(
+    name = "publish_book",
+    srcs = ["publish_book.sh"],
+    data = [":book"],
+    env = {"BOOK_DIR": "$(rootpath :book)"},
+    tags = ["manual"],
+)

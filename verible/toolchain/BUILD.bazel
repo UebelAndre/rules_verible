@@ -1,0 +1,34 @@
+load("//verible:verible_toolchain.bzl", "verible_toolchain")
+
+# (toolchain_name, repo, os, cpu)
+_PLATFORMS = [
+    ("linux_x86_64", "@verible_linux_x86_64", "linux", "x86_64"),
+    ("linux_aarch64", "@verible_linux_aarch64", "linux", "aarch64"),
+    ("macos_x86_64", "@verible_macos", "macos", "x86_64"),
+    ("macos_aarch64", "@verible_macos", "macos", "aarch64"),
+    ("windows_x86_64", "@verible_windows_x86_64", "windows", "x86_64"),
+]
+
+[
+    verible_toolchain(
+        name = "verible_{}".format(name),
+        verible_diff = "{}//:verible_diff".format(repo),
+        verible_format = "{}//:verible_format".format(repo),
+        verible_lint = "{}//:verible_lint".format(repo),
+    )
+    for (name, repo, _os, _cpu) in _PLATFORMS
+]
+
+[
+    toolchain(
+        name = "verible_{}_toolchain".format(name),
+        exec_compatible_with = [
+            "@platforms//os:{}".format(os),
+            "@platforms//cpu:{}".format(cpu),
+        ],
+        toolchain = ":verible_{}".format(name),
+        toolchain_type = "//verible:toolchain_type",
+        visibility = ["//visibility:public"],
+    )
+    for (name, _repo, os, cpu) in _PLATFORMS
+]

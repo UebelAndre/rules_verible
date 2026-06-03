@@ -1,0 +1,26 @@
+# Materialized as @verible_<platform>//:BUILD.bazel by the verible module extension.
+#
+# Each upstream tarball layout differs slightly:
+#   linux-{x86_64,arm64}: <root>/bin/verible-verilog-*
+#   macOS:                <root>/bin/verible-verilog-*
+#   win64:                <root>/verible-verilog-*.exe
+# The `**` recursive glob below matches all of them.
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(glob(["**/verible-verilog-*"]))
+
+filegroup(
+    name = "verible_format",
+    srcs = glob(["**/verible-verilog-format*"]),
+)
+
+filegroup(
+    name = "verible_lint",
+    srcs = glob(["**/verible-verilog-lint*"]),
+)
+
+filegroup(
+    name = "verible_diff",
+    srcs = glob(["**/verible-verilog-diff*"]),
+)

@@ -1,0 +1,10 @@
+licenses(["notice"])
+
+exports_files(
+    [
+        "LICENSE",
+        "MODULE.bazel",
+        "version.bzl",
+    ],
+    visibility = ["//visibility:public"],
+)

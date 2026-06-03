@@ -1,0 +1,47 @@
+###############################################################################
+## Bazel Configuration Flags
+##
+## `.bazelrc` is a Bazel configuration file.
+## https://bazel.build/docs/best-practices#bazelrc-file
+###############################################################################
+
+# https://bazel.build/reference/command-line-reference#flag--enable_platform_specific_config
+common --enable_platform_specific_config
+
+# https://github.com/bazelbuild/bazel/issues/8195
+build --incompatible_disallow_empty_glob=true
+
+# https://github.com/bazelbuild/bazel/issues/12821
+build --nolegacy_external_runfiles
+
+# Disable networking in sandboxes to encourage hermetic builds
+build --sandbox_default_allow_network=false
+
+###############################################################################
+## Configuration Flags
+###############################################################################
+
+# Enable verible-verilog-format checks for all targets in the workspace.
+# Usage: bazel build --config=verible_format //...
+build:verible_format --aspects=//verible:verible_format_aspect.bzl%verible_format_aspect
+build:verible_format --output_groups=+verible_format_checks
+
+# Enable verible-verilog-lint checks for all targets in the workspace.
+# Usage: bazel build --config=verible_lint //...
+build:verible_lint --aspects=//verible:verible_lint_aspect.bzl%verible_lint_aspect
+build:verible_lint --output_groups=+verible_lint_checks
+
+# Enable both format and lint at once.
+# Usage: bazel build --config=verible //...
+build:verible --config=verible_format
+build:verible --config=verible_lint
+
+###############################################################################
+## Custom user flags
+##
+## This should always be the last thing in the `.bazelrc` file to ensure
+## consistent behavior when setting flags in that file as `.bazelrc` files are
+## evaluated top to bottom.
+###############################################################################
+
+try-import %workspace%/user.bazelrc

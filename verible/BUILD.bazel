@@ -1,0 +1,98 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//verible/private:toolchain_alias.bzl", "verible_toolchain_alias")
+
+# Public .bzl sources exposed so downstream stardoc / bzl_library users can
+# reference them.
+exports_files(
+    [
+        "defs.bzl",
+        "verible_diff_test.bzl",
+        "verible_format_aspect.bzl",
+        "verible_format_test.bzl",
+        "verible_lint_aspect.bzl",
+        "verible_lint_test.bzl",
+        "verible_toolchain.bzl",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+toolchain_type(
+    name = "toolchain_type",
+    visibility = ["//visibility:public"],
+)
+
+verible_toolchain_alias(
+    name = "current_verible_toolchain",
+    visibility = ["//visibility:public"],
+)
+
+# `bazel run //verible:format_fix -- //...` rewrites Verilog sources in place
+# via `verible-verilog-format --inplace`.
+alias(
+    name = "format_fix",
+    actual = "//verible/private:verible_format_fixer",
+    visibility = ["//visibility:public"],
+)
+
+# `bazel run //verible:lint_fix -- //...` applies lint autofixes in place via
+# `verible-verilog-lint --autofix=inplace`.
+alias(
+    name = "lint_fix",
+    actual = "//verible/private:verible_lint_fixer",
+    visibility = ["//visibility:public"],
+)
+
+bzl_library(
+    name = "verible_toolchain",
+    srcs = ["verible_toolchain.bzl"],
+    visibility = ["//visibility:public"],
+)
+
+bzl_library(
+    name = "verible_format_aspect",
+    srcs = ["verible_format_aspect.bzl"],
+    visibility = ["//visibility:public"],
+    deps = ["//verible/private:format"],
+)
+
+bzl_library(
+    name = "verible_format_test",
+    srcs = ["verible_format_test.bzl"],
+    visibility = ["//visibility:public"],
+    deps = ["//verible/private:format"],
+)
+
+bzl_library(
+    name = "verible_lint_aspect",
+    srcs = ["verible_lint_aspect.bzl"],
+    visibility = ["//visibility:public"],
+    deps = ["//verible/private:lint"],
+)
+
+bzl_library(
+    name = "verible_lint_test",
+    srcs = ["verible_lint_test.bzl"],
+    visibility = ["//visibility:public"],
+    deps = ["//verible/private:lint"],
+)
+
+bzl_library(
+    name = "verible_diff_test",
+    srcs = ["verible_diff_test.bzl"],
+    visibility = ["//visibility:public"],
+    deps = ["//verible/private:diff"],
+)
+
+bzl_library(
+    name = "defs",
+    srcs = ["defs.bzl"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":verible_diff_test",
+        ":verible_format_aspect",
+        ":verible_format_test",
+        ":verible_lint_aspect",
+        ":verible_lint_test",
+        ":verible_toolchain",
+    ],
+)
