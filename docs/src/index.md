@@ -2,7 +2,7 @@
 
 Bazel rules that wrap the [Verible](https://github.com/chipsalliance/verible)
 SystemVerilog/Verilog tools — `verible-verilog-format`, `verible-verilog-lint`,
-and `verible-verilog-diff` — for projects that build with
+`verible-verilog-diff`, and `verible-verilog-syntax` — for projects that build with
 [rules_verilog](https://github.com/hw-bzl/rules_verilog).
 
 ## Overview
@@ -13,10 +13,10 @@ Each tool ships as a combination of an aspect (run via
 set works on every platform Verible itself ships for, with no scripting-language
 dependency.
 
-- **`verible_toolchain`** — registers the three Verible binaries
-  (`verible-verilog-format`, `verible-verilog-lint`, `verible-verilog-diff`).
-  Default toolchains are auto-registered per-platform using prebuilt release
-  tarballs.
+- **`verible_toolchain`** — registers the Verible binaries
+  (`verible-verilog-format`, `verible-verilog-lint`, `verible-verilog-diff`,
+  `verible-verilog-syntax`). Default toolchains are auto-registered per-platform
+  using prebuilt release tarballs.
 - **`verible_format_aspect`** / **`verible_format_test`** — check that
   `VerilogInfo` targets are correctly formatted.
 - **`verible_lint_aspect`** / **`verible_lint_test`** — lint `VerilogInfo`

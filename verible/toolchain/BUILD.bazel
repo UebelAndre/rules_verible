@@ -15,6 +15,7 @@ _PLATFORMS = [
         verible_diff = "{}//:verible_diff".format(repo),
         verible_format = "{}//:verible_format".format(repo),
         verible_lint = "{}//:verible_lint".format(repo),
+        verible_syntax = "{}//:verible_syntax".format(repo),
     )
     for (name, repo, _os, _cpu) in _PLATFORMS
 ]
