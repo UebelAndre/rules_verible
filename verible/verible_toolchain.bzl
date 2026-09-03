@@ -11,13 +11,15 @@ def _verible_toolchain_impl(ctx):
     format_file = ctx.file.verible_format
     lint_file = ctx.file.verible_lint
     diff_file = ctx.file.verible_diff
+    syntax_file = ctx.file.verible_syntax
 
     all_files = depset(
-        [format_file, lint_file, diff_file],
+        [format_file, lint_file, diff_file, syntax_file],
         transitive = [
             ctx.attr.verible_format[DefaultInfo].files,
             ctx.attr.verible_lint[DefaultInfo].files,
             ctx.attr.verible_diff[DefaultInfo].files,
+            ctx.attr.verible_syntax[DefaultInfo].files,
         ],
     )
 
@@ -25,12 +27,14 @@ def _verible_toolchain_impl(ctx):
         "VERIBLE_DIFF_RLOCATIONPATH": _rlocationpath(diff_file, ctx.workspace_name),
         "VERIBLE_FORMAT_RLOCATIONPATH": _rlocationpath(format_file, ctx.workspace_name),
         "VERIBLE_LINT_RLOCATIONPATH": _rlocationpath(lint_file, ctx.workspace_name),
+        "VERIBLE_SYNTAX_RLOCATIONPATH": _rlocationpath(syntax_file, ctx.workspace_name),
     })
 
     toolchain_info = platform_common.ToolchainInfo(
         verible_format = format_file,
         verible_lint = lint_file,
         verible_diff = diff_file,
+        verible_syntax = syntax_file,
         all_files = all_files,
         template_variable_info = template_vars,
     )
@@ -46,15 +50,16 @@ verible_toolchain = rule(
     doc = """A toolchain that exposes the [Verible](https://github.com/chipsalliance/verible) tools.
 
 A single instance holds every Verible binary `rules_verible` knows about
-(`verible-verilog-format`, `verible-verilog-lint`, `verible-verilog-diff`).
-The format, lint, and diff pipelines all consume the same
-`//verible:toolchain_type` and pull whichever binary they need from the
+(`verible-verilog-format`, `verible-verilog-lint`, `verible-verilog-diff`,
+`verible-verilog-syntax`). The format, lint, and diff pipelines all consume the
+same `//verible:toolchain_type` and pull whichever binary they need from the
 resolved `ToolchainInfo`.
 
 The rule also provides `platform_common.TemplateVariableInfo` exposing
-`VERIBLE_FORMAT_RLOCATIONPATH`, `VERIBLE_LINT_RLOCATIONPATH`, and
-`VERIBLE_DIFF_RLOCATIONPATH`, so a downstream `cc_binary` can reference each
-binary's runfiles key via `env = {"VERIBLE_..._RLOCATIONPATH": "$(VERIBLE_..._RLOCATIONPATH)"}`.
+`VERIBLE_FORMAT_RLOCATIONPATH`, `VERIBLE_LINT_RLOCATIONPATH`,
+`VERIBLE_DIFF_RLOCATIONPATH`, and `VERIBLE_SYNTAX_RLOCATIONPATH`, so a
+downstream `cc_binary` can reference each binary's runfiles key via
+`env = {"VERIBLE_..._RLOCATIONPATH": "$(VERIBLE_..._RLOCATIONPATH)"}`.
 
 The default toolchain registered by `//verible/toolchain:all` points at the
 prebuilt Verible releases for linux x86_64, linux aarch64, macOS, and
@@ -79,6 +84,13 @@ ahead of the defaults in your `MODULE.bazel`.
         ),
         "verible_lint": attr.label(
             doc = "The `verible-verilog-lint` binary.",
+            allow_single_file = True,
+            cfg = "exec",
+            executable = True,
+            mandatory = True,
+        ),
+        "verible_syntax": attr.label(
+            doc = "The `verible-verilog-syntax` binary.",
             allow_single_file = True,
             cfg = "exec",
             executable = True,

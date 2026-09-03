@@ -2,7 +2,7 @@
 
 Bazel rules that wrap the [Verible](https://github.com/chipsalliance/verible)
 SystemVerilog/Verilog tools — `verible-verilog-format`, `verible-verilog-lint`,
-and `verible-verilog-diff` — for projects that build with
+`verible-verilog-diff`, and `verible-verilog-syntax` — for projects that build with
 [rules_verilog](https://github.com/hw-bzl/rules_verilog).
 
 ## Setup

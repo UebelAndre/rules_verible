@@ -24,3 +24,8 @@ filegroup(
     name = "verible_diff",
     srcs = glob(["**/verible-verilog-diff*"]),
 )
+
+filegroup(
+    name = "verible_syntax",
+    srcs = glob(["**/verible-verilog-syntax*"]),
+)
