@@ -1,5 +1,8 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@rules_cc_autoconf//autoconf:autoconf.bzl", "autoconf")
+load("@rules_cc_autoconf//autoconf:autoconf_hdr.bzl", "autoconf_hdr")
+load("@rules_cc_autoconf//autoconf:checks.bzl", "checks")
 
 exports_files(
     ["BUILD.verible.bazel"],
@@ -47,11 +50,50 @@ bzl_library(
     deps = ["//verible:verible_toolchain"],
 )
 
+autoconf(
+    name = "subprocess_checks",
+    checks = [
+        # Probe the configured toolchain's <spawn.h> rather than guessing from
+        # libc version macros. Older sysroots (e.g. glibc 2.28 on RHEL 8) lack
+        # this and `subprocess_posix.cc` falls back to a parent-side chdir.
+        checks.AC_CHECK_DECL(
+            "posix_spawn_file_actions_addchdir_np",
+            define = "HAVE_DECL_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR_NP",
+            includes = ["#include <spawn.h>"],
+            # Compile as C++ so the probe sees the same feature macros
+            # (`_GNU_SOURCE` is implied by g++/clang++) as the real source.
+            language = "cpp",
+        ),
+    ],
+    # Only the POSIX implementation consults the probe; skip it on Windows so
+    # `bazel build //...` there never compiles against a missing <spawn.h>.
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+)
+
+autoconf_hdr(
+    name = "subprocess_config",
+    out = "subprocess_config.h",
+    # Only the POSIX implementation consults the probe; skip it on Windows so
+    # `bazel build //...` there never compiles against a missing <spawn.h>.
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    template = "subprocess_config.h.in",
+    deps = [":subprocess_checks"],
+)
+
 cc_library(
     name = "subprocess",
     srcs = select({
         "@platforms//os:windows": ["subprocess_win32.cc"],
-        "//conditions:default": ["subprocess_posix.cc"],
+        "//conditions:default": [
+            "subprocess_posix.cc",
+            ":subprocess_config",
+        ],
     }),
     hdrs = ["subprocess.h"],
     visibility = ["//verible:__subpackages__"],
