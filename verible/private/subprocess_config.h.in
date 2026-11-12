@@ -1,0 +1,5 @@
+/* subprocess_config.h.in - rendered by `autoconf_hdr` in BUILD.bazel. */
+
+/* Define to 1 if <spawn.h> declares `posix_spawn_file_actions_addchdir_np`
+   (glibc >= 2.29, musl >= 1.1.24, macOS >= 10.15), and to 0 if not. */
+#undef HAVE_DECL_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR_NP
